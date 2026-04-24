@@ -2,7 +2,7 @@
 
 > My personal Hyprland dotfiles, based on [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland).
 
-![screenshot placeholder](.github/screenshot.png)
+<img width="3840" height="2160" alt="Screenshot_2026-04-24_17 15 50" src="https://github.com/user-attachments/assets/cbab3774-0b1e-45f6-88e2-4add124f366c" />
 
 ## What's different from upstream
 
