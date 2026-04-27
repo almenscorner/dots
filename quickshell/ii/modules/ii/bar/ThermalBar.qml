@@ -11,6 +11,7 @@ Item {
 
     property int cpuTemp: 0
     property int gpuTemp: 0
+    property string cpuTempPath: ""
 
     function tempColor(t) {
         if (t >= 80) return Appearance.colors.colError
@@ -74,7 +75,15 @@ Item {
 
     FileView {
         id: cpuTempFile
-        path: "/sys/class/hwmon/hwmon1/temp1_input"
+        path: root.cpuTempPath
+    }
+
+    Process {
+        id: cpuTempPathProc
+        command: ["sh", "-c", "for d in /sys/class/hwmon/hwmon*; do [ -f \"$d/name\" ] || continue; if [ \"$(cat \"$d/name\")\" = \"k10temp\" ] && [ -e \"$d/temp1_input\" ]; then echo \"$d/temp1_input\"; exit 0; fi; done; for d in /sys/class/hwmon/hwmon*; do [ -e \"$d/temp1_input\" ] && { echo \"$d/temp1_input\"; exit 0; }; done"]
+        stdout: StdioCollector {
+            onStreamFinished: root.cpuTempPath = text.trim()
+        }
     }
 
     Process {
@@ -91,8 +100,19 @@ Item {
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            cpuTempFile.reload()
-            root.cpuTemp = Math.round(parseInt(cpuTempFile.text()) / 1000)
+            if (!root.cpuTempPath) {
+                cpuTempPathProc.running = false
+                cpuTempPathProc.running = true
+            }
+
+            if (root.cpuTempPath) {
+                cpuTempFile.reload()
+                const raw = parseInt(cpuTempFile.text())
+                root.cpuTemp = Number.isFinite(raw) ? Math.round(raw / 1000) : 0
+            } else {
+                root.cpuTemp = 0
+            }
+
             gpuTempProc.running = false
             gpuTempProc.running = true
         }
